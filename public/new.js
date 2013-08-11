@@ -40,10 +40,10 @@ keyEntry.onSubmit = function onKeyEntrySubmit(e) {
       xhr.open("POST", "/files/", false);
       xhr.onload = function(event) {
         updateStatus("Uploaded", 100);
-        console.dir(event);
+
         keyEntry.submit.value = "View";
         keyEntry.onSubmit = function() {
-          window.location = "stuff";
+          window.location = xhr.responseText || xhr.response;
         };
       };
       xhr.send(encrypted);

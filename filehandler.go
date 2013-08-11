@@ -75,7 +75,8 @@ func (f *FileHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		// Write it or something
 		io.Copy(file, r.Body)
 		log.Println("saved file ", filePath)
-		http.Redirect(w, r, "/fetch/"+uid, 303) //see other
+    io.WriteString(w, "/fetch/"+uid);
+		// http.Redirect(w, r, "/fetch/"+uid, 303) //see other
 	}
 }
 
