@@ -1,0 +1,44 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Haven</title>
+  <link href='http://fonts.googleapis.com/css?family=Roboto:400,400italic' rel='stylesheet' type='text/css'>
+  <link rel="stylesheet" href="style.css" type="text/css">
+  <link rel="stylesheet" href="new.css" type="text/css">
+</head>
+<body>
+  <div id="container" class="dropbox">
+    <div id="header">
+      <h2 id="title">Haven</h2>
+    </div>
+    <div id="splash" class="dropbox">
+      <div id="key-entry-container" class="dropbox">
+        <input type="password" placeholder="Password" id="key-entry">
+        <div id="status-text"></div>
+        <input type="button" value="Begin Upload" id="upload-button" class="border-button">
+      </div>
+      <table id="file-list" class="dropbox">
+        <tr>
+          <th class="file-header" id="name-header">Name</th>
+          <th class="file-header" id="size-header">Size</th>
+        </tr>
+      </table>
+    </div>
+    <div id="dropbox">
+      <p id="prompt" class="dropbox">Drop files or click</p>
+    </div>
+  </div>
+  <div class="attribution attribution-standalone">
+    Font: Roboto by Christian Robertson under the <a href="http://www.apache.org/licenses/LICENSE-2.0.html">Apache License</a>
+  </div>
+  <input type="file" id="file-input" multiple>
+  <script src="utils/blowfish.js"></script>
+  <script src="utils/blowfish-wrapper.js"></script>
+  <script src="utils/tarify.js"></script>
+  <script src="FileList.js"></script>
+  <script src="Box.js"></script>
+  <script src="KeyEntry.js"></script>
+  <script src="new.js"></script>
+</body>
+</html>

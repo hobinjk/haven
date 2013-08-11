@@ -1,0 +1,78 @@
+#dropbox {
+  text-align: center;
+  height: 100%;
+}
+#splash {
+  height: auto;
+  padding-bottom: 20px;
+}
+#file-list {
+  text-align: left;
+  min-width: 600px;
+  margin: 0 auto;
+  padding: 2em;
+  padding-top: 0em;
+  font-size: 16px;
+  line-height: 40px;
+}
+
+.file-header {
+  color: hsl(240, 100%, 90%);
+  font-weight: normal;
+}
+
+#size-header {
+  width: 4.5em;
+  text-align: left;
+}
+
+.file-row-size {
+  text-align: right;
+}
+
+
+#file-input {
+  display: none;
+}
+
+
+#key-entry-container {
+  width: 550px;
+  margin: 0 auto;
+  height: 40px;
+  padding: 1em;
+}
+
+#key-entry, #status-text {
+  font-size: 16px;
+  float: left;
+  height: 36px;
+  width: 400px;
+  border: none;
+}
+
+#status-text {
+  display: none;
+  text-align: left;
+}
+
+#key-entry {
+  border-bottom: 1px solid #70707f;
+}
+
+#upload-button, #view-button {
+  font-size: 16px;
+  float: right;
+  height: 40px;
+}
+
+
+body, html {
+  height: 100%;
+}
+#vertical-buffer {
+}
+
+#prompt {
+  font-size: 16px;
+}

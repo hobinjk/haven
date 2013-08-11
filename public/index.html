@@ -1,0 +1,57 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Haven</title>
+  <link href='http://fonts.googleapis.com/css?family=Roboto:400,400italic' rel='stylesheet' type='text/css'>
+  <link rel="stylesheet" href="style.css" type="text/css">
+</head>
+<body>
+  <div id="container">
+    <div id="header">
+      <h2 id="title">Haven</h2>
+    </div>
+    <div id="splash">
+      <div id="tagline-container" class="splash-container">
+        <p class="tagline">Store files securely</p>
+        <p class="tagline">Expire files automatically</p>
+        <p class="tagline">Own your information</p>
+        <input type="button" class="tagline tagline-button border-button"
+               value="Get Started" onclick="window.location = '/new.html'"/>
+      </div>
+      <div id="safe-container" class="splash-container">
+      </div>
+    </div>
+    <div id="information-container">
+      <div id="information">
+        <div id="why" class="info">
+          <h3 class="info-header">Mission</h3>
+          <p>Governments around the world have repeatedly shown a callous
+          disregard for individual privacy. Warrantless searches of personal
+          information abound. Haven gives back the power of high-grade
+          secrecy to the masses.
+          <br/><br/>
+          Your files are safe with us.
+          </p>
+        </div>
+        <div id="how" class="info">
+          <h3 class="info-header">Technology</h3>
+          <p>Haven works by ensuring that your files never pass over any
+          network connection. Before any communication occurs between your
+          computer and our servers, Haven encrypts your files using the
+          proven Blowfish cipher. Even if someone were to listen to every
+          last packet of information exchanged, they would be no closer to
+          having your data.</p>
+        </div>
+        <div class="attribution">
+          Font: Roboto by Christian Robertson under the
+          <a href="http://www.apache.org/licenses/LICENSE-2.0.html">Apache License</a>
+        </div>
+      </div>
+    </div>
+
+  </div>
+  <script type="text/javascript" src="raphael-min.js"></script>
+  <script type="text/javascript" src="safe.js"></script>
+</body>
+</html>
