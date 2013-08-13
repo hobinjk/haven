@@ -7,8 +7,8 @@ function KeyEntry(inputId, submitId) {
     if(e.keyCode && e.keyCode == 13)
       self.submit.click(); //wooo laziness
     var passLen = self.input.value.length;
-    //20 chars is a good password or whatever
-    var sat = passLen*5;
+    //10 chars is a good password or whatever
+    var sat = passLen*10;
     if(sat > 100) sat = 100;
     self.submit.style.background = "hsl(240,"+sat+"%,97.1%)";
 
