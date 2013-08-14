@@ -5,28 +5,33 @@ function Tarifier(files) {
   this.files = files;
 }
 
-Tarifier.prototype.tar = function(callback) {
+Tarifier.prototype.tar = function() {
   var files = this.files;
-  this.filesLeft = files.length;
-  this.callback = callback;
 
   var size = 512*files.length;
   for(var i = 0; i < files.length; i++) {
     size += Math.ceil(files[i].size/512)*512;
   }
-  console.log("creating a file of size: "+size);
 
   var arrayBuffer = new ArrayBuffer(size);
   var array = new Uint8Array(arrayBuffer);
 
   var offset = 0;
   for(i = 0; i < files.length; i++) {
+    if(typeof(postMessage) !== "undefined") {
+      postMessage({
+        type: "status",
+        message: "Compressing",
+        fraction: i/files.length
+      });
+    }
     this.putHeader(files[i], array, offset);
     offset += 512;
     var alignedSize = Math.ceil(files[i].size/512)*512;
     this.putFile(files[i], array, offset);
     offset += alignedSize;
   }
+  return array;
 };
 
 Tarifier.prototype.putHeader = function(file, array, base) {
@@ -65,33 +70,21 @@ Tarifier.prototype.putHeader = function(file, array, base) {
 
 Tarifier.prototype.putFile = function(file, array, base) {
   if(file.size === 0) {
-    this.filesLeft -= 1;
-    if(this.filesLeft === 0) {
-      this.callback(array);
-    }
     return;
   }
 
-  var fileReader = new FileReader();
+  var fileReader = new FileReaderSync();
   var self = this;
 
-  fileReader.onload = function(event) {
-    var buf = event.target.result;
-    var data = new Uint8Array(buf);
-    for(var offset = 0; offset < data.length; offset++) {
-      array[base+offset] = data[offset];
-    }
-    var alignedLength = Math.ceil(data.length/512)*512;
-    for(offset = data.length; offset < alignedLength; offset++) {
-      array[base+offset] = 0;
-    }
-    self.filesLeft -= 1;
-    if(self.filesLeft === 0) {
-      self.callback(array);
-    }
-  };
-
-  fileReader.readAsArrayBuffer(file);
+  var buf = fileReader.readAsArrayBuffer(file);
+  var data = new Uint8Array(buf);
+  for(var offset = 0; offset < data.length; offset++) {
+    array[base+offset] = data[offset];
+  }
+  var alignedLength = Math.ceil(data.length/512)*512;
+  for(offset = data.length; offset < alignedLength; offset++) {
+    array[base+offset] = 0;
+  }
 };
 
 Tarifier.prototype.putString = function(str, array, base) {
