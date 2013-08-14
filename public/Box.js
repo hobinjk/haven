@@ -78,11 +78,6 @@ Box.prototype.handleFiles = function(files) {
     this.fileListElem.addFile(files[i]);
   }
 
-  var prompt = document.getElementById("prompt");
-  if(prompt) {
-    prompt.parentNode.removeChild(prompt);
-  }
-
   if(this.onFilesAdded) {
     this.onFilesAdded();
   }

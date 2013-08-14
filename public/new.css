@@ -1,7 +1,10 @@
 #dropbox {
   text-align: center;
-  height: 100%;
+  padding-bottom: 30px;
+  margin: 30px;
+  margin-top: 0px;
 }
+
 #splash {
   height: auto;
   padding-bottom: 20px;
@@ -10,8 +13,8 @@
   text-align: left;
   min-width: 600px;
   margin: 0 auto;
-  padding: 2em;
-  padding-top: 0em;
+  padding: 32px;
+  padding-top: 0px;
   font-size: 16px;
   line-height: 40px;
 }
@@ -19,6 +22,7 @@
 .file-header {
   color: hsl(240, 100%, 90%);
   font-weight: normal;
+  cursor: default;
 }
 
 #size-header {
@@ -79,4 +83,5 @@ body, html {
 
 #prompt {
   font-size: 16px;
+  cursor: default;
 }
