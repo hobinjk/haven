@@ -61,6 +61,7 @@ keyEntry.onSubmit = function onKeyEntrySubmit(e) {
       fileList.addFile(files[i], url);
     }
     updateStatus("Expanded", 0);
+    keyEntry.submit.style.display = "none";
   } else {
     reset();
     alert("Incorrect password");
@@ -74,6 +75,7 @@ function updateStatus(step, percentComplete) {
 function reset() {
   statusText.style.display = "none";
   keyEntry.input.style.display = "inline-block";
+  keyEntry.submit.display = "";
   keyEntry.submit.value = "View Files";
 }
 
