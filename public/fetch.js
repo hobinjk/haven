@@ -14,7 +14,17 @@ if(typeof(uid) === "undefined") {
   alert("File not found");
   return; //ooooooh this is shiny
 }
+
+keyEntry.submit.style.display = "none";
+keyEntry.input.style.display = "none";
+statusText.style.display = "inline-block";
+
 updateStatus("Downloading");
+
+xhr.addEventListener("progress", function(e) {
+  if(e.lengthComputable)
+    updateStatus("Downloading", e.loaded/e.total);
+}, false);
 
 xhr.open("GET", "/files/"+uid, true);
 xhr.responseType = "arraybuffer";
@@ -25,7 +35,7 @@ xhr.onload = function (event) {
     alert("File not found");
   }
   fetchedData = new Uint8Array(buffer);
-  updateStatus("Downloaded");
+  reset();
 };
 
 xhr.send(null);
@@ -49,18 +59,19 @@ keyEntry.onSubmit = function onKeyEntrySubmit(e) {
   };
 
 
-  updateStatus("Decrypting", 0);
+  updateStatus("Decrypting");
   var decrypted = Blowfish.crypt(key, fetchedData, false);
 
-  updateStatus("Expanding", 0);
+  updateStatus("Expanding");
   var files = new Untarifier(decrypted).untar();
   if(files) {
     for(var i = 0; i < files.length; i++) {
+      updateStatus("Expanding", i/files.length);
       var blob = new Blob([files[i].array]);
       var url = window.URL.createObjectURL(blob);
       fileList.addFile(files[i], url);
     }
-    updateStatus("Expanded", 0);
+    updateStatus("Expanded");
     keyEntry.submit.style.display = "none";
   } else {
     reset();
@@ -68,14 +79,18 @@ keyEntry.onSubmit = function onKeyEntrySubmit(e) {
   }
 };
 
-function updateStatus(step, percentComplete) {
+function updateStatus(step, fractionComplete) {
   statusText.textContent = step;
+  if(typeof(fractionComplete) !== "undefined") {
+    statusText.textContent += " ("+Math.floor(100*fractionComplete)+"%)";
+  }
 }
+
 
 function reset() {
   statusText.style.display = "none";
   keyEntry.input.style.display = "inline-block";
-  keyEntry.submit.display = "";
+  keyEntry.submit.style.display = "";
   keyEntry.submit.value = "View Files";
 }
 
