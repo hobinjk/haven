@@ -20,7 +20,7 @@ Tarifier.prototype.tar = function(callback) {
   var array = new Uint8Array(arrayBuffer);
 
   var offset = 0;
-  for(var i = 0; i < files.length; i++) {
+  for(i = 0; i < files.length; i++) {
     this.putHeader(files[i], array, offset);
     offset += 512;
     var alignedSize = Math.ceil(files[i].size/512)*512;
@@ -64,6 +64,14 @@ Tarifier.prototype.putHeader = function(file, array, base) {
 };
 
 Tarifier.prototype.putFile = function(file, array, base) {
+  if(file.size === 0) {
+    this.filesLeft -= 1;
+    if(this.filesLeft === 0) {
+      this.callback(array);
+    }
+    return;
+  }
+
   var fileReader = new FileReader();
   var self = this;
 
@@ -74,7 +82,7 @@ Tarifier.prototype.putFile = function(file, array, base) {
       array[base+offset] = data[offset];
     }
     var alignedLength = Math.ceil(data.length/512)*512;
-    for(var offset = data.length; offset < alignedLength; offset++) {
+    for(offset = data.length; offset < alignedLength; offset++) {
       array[base+offset] = 0;
     }
     self.filesLeft -= 1;
