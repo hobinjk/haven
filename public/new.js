@@ -17,7 +17,7 @@ keyEntry.onSubmit = function onKeyEntrySubmit(e) {
   e.stopPropagation();
   e.preventDefault();
   key = keyEntry.input.value;
-  if(!dropBox.files) {
+  if(!dropBox.files || (dropBox.files.length === 0)) {
     alert("You must specify some files");
     return;
   }

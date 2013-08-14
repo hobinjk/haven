@@ -6,6 +6,7 @@ function Box(id) {
   this.onDragEnter = this.onDragEnter.bind(this);
   this.onDragLeave = this.onDragLeave.bind(this);
   this.onDrop = this.onDrop.bind(this);
+  this.onFileDelete = this.onFileDelete.bind(this);
 
   this.elem = document.getElementById(id);
   this.elem.addEventListener("dragenter", this.onDragEnter.bind(this), false);
@@ -14,18 +15,18 @@ function Box(id) {
   this.elem.addEventListener("drop", this.onDrop.bind(this), false);
 
   this.fileListElem = new FileList("file-list");
+  this.fileListElem.onFileDelete = this.onFileDelete;
+  this.nextFileId = 0;
 
   this.addOnClick();
 }
 
 Box.prototype.onDragEnter = function(e) {
-  console.log("ondragenter");
   this.elem.classList.add(this.id+"-drag-over");
 };
 
 
 Box.prototype.onDragLeave = function(e) {
-  console.log("ondragleave");
   this.elem.classList.remove(this.id+"-drag-over");
 };
 
@@ -44,7 +45,7 @@ Box.prototype.onClick = function(e) {
   hiddenInput.addEventListener("change", function changeListener(event) {
     this.handleFiles(event.target.files);
     event.target.removeEventListener("change", changeListener, false);
-  }, false);
+  }.bind(this), false);
   hiddenInput.click();
 };
 
@@ -64,18 +65,20 @@ Box.prototype.handleFiles = function(files) {
 
   //convert to array (probably a better way to do this)
   for(var i = 0; i < files.length; i++) {
+    files[i].id = "" + this.nextFileId++;
     this.files.push(files[i]);
-  }
-
-  console.log(this+" is receiving "+files.length+" files");
-
-  for(i = 0; i < files.length; i++) {
     this.fileListElem.addFile(files[i]);
   }
 
   if(this.onFilesAdded) {
     this.onFilesAdded();
   }
+};
+
+Box.prototype.onFileDelete = function(fileId) {
+  this.files = this.files.filter(function(f) {
+    return f.id !== fileId;
+  });
 };
 
 Box.stop = function(e) {

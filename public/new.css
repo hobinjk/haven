@@ -9,12 +9,14 @@
   height: auto;
   padding-bottom: 20px;
 }
+
 #file-list {
   text-align: left;
   min-width: 600px;
   margin: 0 auto;
   padding: 32px;
   padding-top: 0px;
+  padding-left: 0px;
   font-size: 16px;
   line-height: 40px;
 }
@@ -23,6 +25,12 @@
   color: hsl(240, 100%, 90%);
   font-weight: normal;
   cursor: default;
+}
+
+#delete-header {
+  width: 32px;
+  padding: 0px;
+  margin: 0px;
 }
 
 #size-header {
@@ -34,6 +42,22 @@
   text-align: right;
 }
 
+.file-row-delete {
+  opacity: 0;
+  transition: opacity 0.15s;
+  margin: 12px;
+  background-image: url("delete.png");
+  background-position: center center;
+  background-repeat: no-repeat;
+}
+
+.file-row:hover > .file-row-delete {
+  opacity: 0.4;
+}
+
+.file-row:hover > .file-row-delete:hover {
+  opacity: 1;
+}
 
 #file-input {
   display: none;

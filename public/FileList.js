@@ -1,10 +1,20 @@
 function FileList(id) {
   this.elem = document.getElementById(id);
+  this.onFileDelete = null;
+  this.wrappedOnFileDelete = this.wrappedOnFileDelete.bind(this);
 }
 
 FileList.prototype.addFile = function(file, href) {
   var elt = document.createElement("tr");
   elt.classList.add("file-row");
+
+  var del = document.createElement("td");
+  if(this.onFileDelete) {
+    del.classList.add("file-row-delete");
+    del.addEventListener("click", this.wrappedOnFileDelete, false);
+    del.dataset.fileId = file.id;
+  }
+
 
   var name = document.createElement("td");
   name.classList.add("file-row-name");
@@ -22,11 +32,21 @@ FileList.prototype.addFile = function(file, href) {
   size.classList.add("file-row-size");
   size.textContent = FileList.humanReadableSize(file.size);
 
+  elt.appendChild(del);
   elt.appendChild(name);
   elt.appendChild(size);
 
   this.elem.appendChild(elt);
 };
+
+FileList.prototype.wrappedOnFileDelete = function(e) {
+  e.target.removeEventListener("click", this.wrappedOnFileDelete, false);
+  var elt = e.target.parentNode;
+  if(this.onFileDelete)
+    this.onFileDelete(e.target.dataset.fileId);
+  elt.parentNode.removeChild(elt);
+};
+
 
 FileList.humanReadableSize = function(size) {
   var suffixes = ["B", "KB", "MB", "GB"];
