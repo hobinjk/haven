@@ -10,8 +10,10 @@ var keyEntry = new KeyEntry("key-entry", "view-button");
 var fetchedData;
 var xhr = new XMLHttpRequest();
 var uid = window.location.pathname.split("/")[2];
+
 if(typeof(uid) === "undefined") {
   alert("File not found");
+  window.location = "/";
   return; //ooooooh this is shiny
 }
 
@@ -22,8 +24,13 @@ statusText.style.display = "inline-block";
 updateStatus("Downloading");
 
 xhr.addEventListener("progress", function(e) {
-  if(e.lengthComputable)
-    updateStatus("Downloading", e.loaded/e.total);
+  if(e.lengthComputable) {
+    updateStatus({
+      type: "status",
+      message: "Downloading",
+      fraction: e.loaded/e.total
+    });
+  }
 }, false);
 
 xhr.open("GET", "/files/"+uid, true);
@@ -33,6 +40,8 @@ xhr.onload = function (event) {
   var buffer = xhr.response;
   if (!buffer) {
     alert("File not found");
+    window.location = "/";
+    return;
   }
   fetchedData = new Uint8Array(buffer);
   reset();
@@ -40,49 +49,53 @@ xhr.onload = function (event) {
 
 xhr.send(null);
 
-keyEntry.onSubmit = function onKeyEntrySubmit(e) {
+keyEntry.onSubmit = onKeyEntrySubmit;
+function onKeyEntrySubmit(e) {
   e.stopPropagation();
   e.preventDefault();
 
   key = keyEntry.input.value;
-
   if(!fetchedData) {
     alert("Data must be downloaded");
     return;
   }
+  var worker = new Worker("/utils/fetch-worker.js");
+
+  worker.onmessage = function(event) {
+    updateStatus(event.data);
+  };
+
+  worker.postMessage({
+    key: key,
+    data: fetchedData
+  });
+
 
   statusText.style.display = "inline-block";
   keyEntry.input.style.display = "none";
   keyEntry.submit.value = "Cancel";
   keyEntry.onSubmit = function() {
-    alert("I'm sorry Dave, I can't let you do that");
+    worker.terminate();
+    updateStatus({
+      type: "error",
+      message: "Canceled"
+    });
   };
+}
 
-
-  updateStatus("Decrypting");
-  var decrypted = Blowfish.crypt(key, fetchedData, false);
-
-  updateStatus("Expanding");
-  var files = new Untarifier(decrypted).untar();
-  if(files) {
-    for(var i = 0; i < files.length; i++) {
-      updateStatus("Expanding", i/files.length);
-      var blob = new Blob([files[i].array]);
-      var url = window.URL.createObjectURL(blob);
-      fileList.addFile(files[i], url);
-    }
-    updateStatus("Expanded");
-    keyEntry.submit.style.display = "none";
-  } else {
-    reset();
-    alert("Incorrect password");
+function updateStatus(statusData) {
+  statusText.textContent = statusData.message;
+  if(typeof(statusData.fraction) !== "undefined") {
+    statusText.textContent += " ("+Math.floor(100*statusData.fraction)+"%)";
   }
-};
 
-function updateStatus(step, fractionComplete) {
-  statusText.textContent = step;
-  if(typeof(fractionComplete) !== "undefined") {
-    statusText.textContent += " ("+Math.floor(100*fractionComplete)+"%)";
+  if(statusData.type === "error") {
+    keyEntry.onSubmit = reset;
+    keyEntry.submit.value = "Reset";
+  } else if(statusData.type === "file") {
+    fileList.addFile(statusData.file, statusData.url);
+  } else if(statusData.type === "done") {
+    statusText.parentNode.style.display = "none";
   }
 }
 
@@ -92,6 +105,7 @@ function reset() {
   keyEntry.input.style.display = "inline-block";
   keyEntry.submit.style.display = "";
   keyEntry.submit.value = "View Files";
+  keyEntry.onSubmit = onKeyEntrySubmit;
 }
 
 })();

@@ -1,4 +1,4 @@
-importScripts('tarify.js', 'blowfish.js', 'blowfish-wrapper.js');
+importScripts('tarify.js');
 
 onmessage = function(event) {
   var key = event.data.key;
@@ -21,6 +21,12 @@ onmessage = function(event) {
     type: "status",
     message: "Encrypting"
   });
+  Module = {};
+  Module.TOTAL_MEMORY = 1 << Math.ceil(Math.log2(tar.length + 2000));
+
+  importScripts('blowfish.js');
+  importScripts('blowfish-wrapper.js');
+
   var encrypted = Blowfish.crypt(key, tar, true);
 
   if(!encrypted) {

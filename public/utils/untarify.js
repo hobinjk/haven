@@ -9,7 +9,13 @@ Untarifier.prototype.untar = function() {
   while(offset < array.length) {
     var header = this.readHeader(array, offset);
     if(!header) return;
-    console.log("read file: "+header.name);
+    if(typeof(postMessage) !== "undefined") {
+      postMessage({
+        type: "status",
+        message: "Expanding",
+        fraction: offset / array.length
+      });
+    }
     offset += 512;
 
     var fileData = this.readFile(array, offset, header.size);

@@ -2,6 +2,7 @@ var Blowfish = {
   initialize: function() {
     this.wrappedCrypt = Module.cwrap('crypt', 'void', ['string', 'number', 'number', 'number', 'number']);
     this.free = Module._free ? Module._free : _free;
+    this._ptr = -1;
   },
   crypt: function(key, input, encrypt) {
     var length = input.length;
@@ -19,6 +20,7 @@ var Blowfish = {
     //this.free(inputPtr);
 
     //this.free(keyPtr);
+    this._ptr = outputPtr;
     return Module.HEAPU8.subarray(outputPtr, outputPtr + length);
   },
   decrypt: function(key, input) {
@@ -26,6 +28,10 @@ var Blowfish = {
   },
   encrypt: function(key, input) {
     return this.crypt(key, input, true);
+  },
+  cleanup: function() {
+    if(this._ptr >= 0)
+      this.free(this._ptr);
   }
 };
 Blowfish.initialize();
