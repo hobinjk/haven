@@ -8,6 +8,7 @@ import (
 	"net/http"
 	"os"
 	"path"
+  "time"
 )
 
 const UID_LENGTH = 20
@@ -15,6 +16,7 @@ const UID_LENGTH = 20
 type FileHandler struct {
 	uids      chan string
   notFound http.Handler
+  reaper *Reaper
 }
 
 type NotFoundInfo struct {
@@ -77,6 +79,7 @@ func (f *FileHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		log.Println("saved file ", filePath)
     io.WriteString(w, "/fetch/"+uid);
 		// http.Redirect(w, r, "/fetch/"+uid, 303) //see other
+    f.reaper.Track(filePath, 24*time.Hour)
 	}
 }
 

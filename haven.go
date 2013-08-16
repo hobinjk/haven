@@ -6,11 +6,14 @@ import (
 )
 
 func main() {
-  log.Println("merble")
+  reaper := &Reaper{make(chan Life)}
+  go reaper.Run()
+
   notFoundHandler := NewNotFoundHandler()
-  fileHandler := &FileHandler{make(chan string), notFoundHandler}
+  fileHandler := &FileHandler{make(chan string), notFoundHandler, reaper}
   fetchHandler := &FetchHandler{notFoundHandler}
   go fileHandler.GenerateUIDs()
+
   http.Handle("/files/", http.StripPrefix("/files/", fileHandler))
   http.Handle("/fetch/", fetchHandler)
   http.Handle("/", http.FileServer(http.Dir("public")))
