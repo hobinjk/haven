@@ -123,6 +123,11 @@ func (f *FileHandler) handleGet(w http.ResponseWriter, r *http.Request, uid stri
     log.Fatal(err)
     return
   }
+
+  if DEBUG {
+    log.Println("cache load")
+  }
+
   buf := bytes.NewBuffer(make([]byte, 0, stat.Size()))
   io.Copy(buf, file)
   f.cache.Add(uid, &CacheEntry{buf.Bytes(), uid, stat.ModTime()})
@@ -134,14 +139,11 @@ func (f *FileHandler) cachedGet(w http.ResponseWriter, r *http.Request, uid stri
   if ok {
     cacheEntry, ok := cachebuf.(*CacheEntry)
     if ok {
-      log.Println("cache hit")
       http.ServeContent(w, r, uid, cacheEntry.lastModified, bytes.NewReader(cacheEntry.data))
       return true
-    } else {
+    } else if DEBUG {
       log.Println("cache miss: wrong type: ", cachebuf)
     }
-  } else {
-    log.Println("cache miss, not in cache")
   }
   return false
 }
