@@ -9,8 +9,12 @@ onmessage = function(event) {
     message: "Decrypting"
   });
 
-  Module = {};
-  Module.TOTAL_MEMORY = 1 << Math.ceil(Math.log2(data.length + 2000));
+  if(data.length > 33554432 - 2000) {
+    if(typeof(Module) === "undefined")
+      Module = {};
+    Module.TOTAL_MEMORY = 1 << Math.ceil(Math.log2(data.length + 2000));
+    Module.test = "test";
+  }
 
   importScripts('blowfish.js');
   importScripts('blowfish-wrapper.js');

@@ -21,8 +21,12 @@ onmessage = function(event) {
     type: "status",
     message: "Encrypting"
   });
-  Module = {};
-  Module.TOTAL_MEMORY = 1 << Math.ceil(Math.log2(tar.length + 2000));
+  if(tar.length > 33554432 - 2000) {
+    if(typeof(Module) === "undefined")
+      Module = {};
+    Module.TOTAL_MEMORY = 1 << Math.ceil(Math.log2(tar.length + 2000));
+    Module.test = "test";
+  }
 
   importScripts('blowfish.js');
   importScripts('blowfish-wrapper.js');
