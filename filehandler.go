@@ -1,10 +1,12 @@
 package main
 
 import (
+  "bytes"
 	"crypto/rand"
 	"encoding/hex"
 	"io"
 	"log"
+  "github.com/golang/groupcache/lru"
 	"net/http"
 	"os"
 	"path"
@@ -17,10 +19,17 @@ type FileHandler struct {
 	uids      chan string
   notFound http.Handler
   reaper *Reaper
+  cache *lru.Cache
 }
 
 type NotFoundInfo struct {
 	Path string
+}
+
+type CacheEntry struct {
+  data []byte
+  name string
+  lastModified time.Time
 }
 
 func IsValidUID(uid string) bool {
@@ -38,48 +47,20 @@ func (f *FileHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	switch r.Method {
 	case "GET":
 		// File will be retrieved if possible
-		urlPath := r.URL.Path
-		log.Println("serving GET to ", urlPath)
-		if !IsValidUID(urlPath) {
-			log.Println(urlPath, " is not a valid UID")
+		uid := r.URL.Path
+		if !IsValidUID(uid) {
+      if DEBUG {
+        log.Println(uid, " is not a valid UID")
+      }
 			f.notFound.ServeHTTP(w, r)
 			return
 		}
-
-		filePath, ok := MakePathFromUID(urlPath)
-    if !ok {
-      f.notFound.ServeHTTP(w, r)
-      return
-    }
-
-    if _, err := os.Stat(filePath); os.IsNotExist(err) {
-			f.notFound.ServeHTTP(w, r)
-			return
-		}
-
-		http.ServeFile(w, r, filePath)
+		f.cachedGet(w, r, uid)
 	case "POST":
 		// File will be uploaded
 		uid := <-f.uids
-    filePath, ok := MakePathFromUID(uid)
-    if !ok {
-      log.Println("invalid uid", uid);
-			http.Error(w, "unable to create file", 500)
-			return
-		}
-		os.MkdirAll(path.Dir(filePath), 0775)
-		file, err := os.Create(filePath)
-		if err != nil {
-			log.Println(err)
-			http.Error(w, "unable to create file", 500)
-			return
-		}
+    f.cachedPost(w, r, uid)
 		// Write it or something
-		io.Copy(file, r.Body)
-		log.Println("saved file ", filePath)
-    io.WriteString(w, "/fetch/"+uid);
-		// http.Redirect(w, r, "/fetch/"+uid, 303) //see other
-    f.reaper.Track(filePath, 24*time.Hour)
 	}
 }
 
@@ -90,3 +71,78 @@ func (f *FileHandler) GenerateUIDs() {
 		f.uids <- hex.EncodeToString(uid)
 	}
 }
+
+func (f *FileHandler) cachedGet(w http.ResponseWriter, r *http.Request, uid string) {
+  filePath, ok := MakePathFromUID(uid)
+  if !ok {
+    f.notFound.ServeHTTP(w, r)
+    return
+  }
+
+  if _, err := os.Stat(filePath); os.IsNotExist(err) {
+    f.notFound.ServeHTTP(w, r)
+    return
+  }
+
+
+  cachebuf, ok := f.cache.Get(uid)
+  if ok {
+    cacheEntry, ok := cachebuf.(CacheEntry)
+    if ok {
+      http.ServeContent(w, r, uid, cacheEntry.lastModified, bytes.NewReader(cacheEntry.data))
+      return
+    }
+  }
+
+  file, err := os.Open(filePath)
+  if err != nil {
+    f.notFound.ServeHTTP(w, r)
+    return
+  }
+
+  stat, err := os.Stat(filePath)
+  if err != nil {
+    f.notFound.ServeHTTP(w, r)
+    log.Fatal(err)
+    return
+  }
+  buf := bytes.NewBuffer(make([]byte, 0, stat.Size()))
+  io.Copy(buf, file)
+  file.Close()
+  http.ServeContent(w, r, uid, stat.ModTime(), bytes.NewReader(buf.Bytes()))
+  f.cache.Add(uid, CacheEntry{buf.Bytes(), uid, stat.ModTime()})
+}
+
+func (f *FileHandler) cachedPost(w http.ResponseWriter, r *http.Request, uid string) {
+  filePath, ok := MakePathFromUID(uid)
+  if !ok {
+    if DEBUG {
+      log.Println("invalid uid", uid);
+    }
+    http.Error(w, "unable to create file", 500)
+    return
+  }
+  os.MkdirAll(path.Dir(filePath), 0775)
+  file, err := os.Create(filePath)
+  if err != nil {
+    if DEBUG {
+      log.Println(err)
+    }
+    http.Error(w, "unable to create file", 500)
+    return
+  }
+  buf := bytes.NewBuffer(make([]byte, 0, r.ContentLength))
+  io.Copy(buf, r.Body)
+  f.cache.Add(uid, CacheEntry{buf.Bytes(), uid, time.Now()})
+  io.Copy(file, buf)
+  file.Close()
+  io.WriteString(w, "/fetch/"+uid);
+  f.reaper.Track(file.Name(), 24*time.Hour)
+
+  if DEBUG {
+    log.Println("saved file ", filePath)
+  }
+}
+
+
+
