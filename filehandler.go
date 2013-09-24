@@ -2,7 +2,7 @@ package main
 
 import (
   "bytes"
-	"crypto/rand"
+  "crypto/rand"
 	"encoding/hex"
 	"io"
 	"log"
@@ -166,6 +166,12 @@ func (f *FileHandler) cachedPost(w http.ResponseWriter, r *http.Request, uid str
     http.Error(w, "unable to create file", 500)
     return
   }
+
+  if r.ContentLength > 10*1024*1024 {
+    http.Error(w, "Sorry, files are limited to 10 MB", 500)
+    return
+  }
+
   buf := bytes.NewBuffer(make([]byte, 0, r.ContentLength))
   io.Copy(buf, r.Body)
   f.cache.Add(uid, &CacheEntry{buf.Bytes(), uid, time.Now()})

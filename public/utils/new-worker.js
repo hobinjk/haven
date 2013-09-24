@@ -40,6 +40,13 @@ onmessage = function(event) {
     });
     return;
   }
+  if(encrypted.length > 10*1024*1024) {
+    postMessage({
+      type: "error",
+      message: "Sorry, file uploads are limited to 10 MB (the server is tiny)"
+    });
+    return;
+  }
   postMessage({
     type: "status",
     message: "Sending"
